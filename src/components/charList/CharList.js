@@ -39,9 +39,10 @@ class CharList extends Component {
 
 	render() {
 		const { chars, loading, error } = this.state;
+		const { onCharSelected } = this.props;
 		const loadStatus = loading ? <Spinner /> : null;
 		const errorStatus = error ? <Error /> : null;
-		const visible = (loadStatus || errorStatus) ? null : chars.map(item => <CharItem {...item} key={item.id} />);
+		const visible = (loadStatus || errorStatus) ? null : chars.map(item => <CharItem {...item} key={item.id} onCharSelected={() => onCharSelected(item.id)} />);
 
 		return (
 			<div className="char__list">
@@ -60,15 +61,15 @@ class CharList extends Component {
 
 
 const CharItem = (props) => {
-	const { thumbnail, alt, name } = props;
+	const { thumbnail, alt, name, onCharSelected } = props;
 	let thumbnailStyle = { objectFit: 'cover' };
 
 	if (thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg') {
 		thumbnailStyle.objectFit = 'contain';
 	}
 	return (
-		<li className="char__item">
-			<img src={thumbnail} alt={alt} style={thumbnailStyle}/>
+		<li className="char__item" onClick={onCharSelected}>
+			<img src={thumbnail} alt={alt} style={thumbnailStyle} />
 			<div className="char__name">{name}</div>
 		</li>
 	)
