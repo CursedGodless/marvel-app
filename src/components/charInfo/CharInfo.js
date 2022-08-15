@@ -4,6 +4,8 @@ import MarvelService from '../../services/MarvelServices';
 import Skeleton from '../skeleton/Skeleton'
 import Spinner from '../spinner/Spinner';
 import Error from '../error/Error';
+import PropTypes from 'prop-types';
+
 class CharInfo extends Component {
 	state = {
 		char: null,
@@ -105,6 +107,10 @@ const View = (props) => {
 		</>
 
 	)
+}
+
+CharInfo.propTypes = {
+	charId: PropTypes.number
 }
 
 export default CharInfo;
