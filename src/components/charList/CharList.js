@@ -1,6 +1,6 @@
 import './charList.scss';
 import { useState, useEffect, useMemo } from 'react';
-import MarvelService from '../../services/MarvelServices';
+import useMarvelService from '../../services/MarvelServices';
 import Spinner from '../spinner/Spinner';
 import Error from '../error/Error';
 import Loading from '../loading/Loading';
@@ -8,17 +8,16 @@ import PropTypes from 'prop-types';
 
 function CharList(props) {
 
-	const [chars, setChars] = useState([])
-	const [loading, setLoading] = useState(true)
-	const [error, setError] = useState(false)
+	const [chars, setChars] = useState([]);
 	const [newItemLoading, setNewItemLoading] = useState(false)
 	const [offset, setOffset] = useState(210)
 	const [charEnded, setCharEnded] = useState(false)
 	const [selectedChar, setSelectedChar] = useState(null);
 
-	const marvelService = new MarvelService();
+	const { loading, error, getAllCharacters, clearError } = useMarvelService();
+
 	useEffect(() => {
-		updateChar()
+		updateCharList(true)
 	}, [])
 
 	const onCharsLoaded = (nextChars) => {
@@ -28,33 +27,22 @@ function CharList(props) {
 		}
 
 		setChars(chars => [...chars, ...nextChars]);
-		setLoading(false);
 		setNewItemLoading(false);
 		setOffset(offset => offset + 9);
 		setCharEnded(ended);
 	}
 
-	const onCharsLoading = () => {
-		setNewItemLoading(true)
-	}
+	const updateCharList = (initial) => {
+		initial ? setNewItemLoading(true) : setNewItemLoading(false)
 
-	const updateChar = () => {
-		onCharsLoading();
-		marvelService
-			.getAllCharacters(offset)
+		getAllCharacters(offset)
 			.then(onCharsLoaded)
-			.catch(onError)
-	}
-
-	const onError = () => {
-		setLoading(false);
-		setError(true);
 	}
 
 	const renderButton = () => {
 		return (
 			<button className="button button__main button__long"
-				onClick={updateChar}>
+				onClick={updateCharList}>
 				<div className="inner">load more</div>
 			</button>
 		)
@@ -110,8 +98,8 @@ function CharList(props) {
 
 	const loadStatus = loading ? <Spinner /> : null;
 	const errorStatus = error ? <Error /> : null;
-	const visible = (loadStatus || errorStatus) ? null : renderList(chars);
-	const loadButton = newItemLoading ? <Loading /> : renderButton()
+	const visible = renderList(chars);
+	const loadButton = loading ? <Loading /> : renderButton()
 
 	return (
 		<div className="char__list">

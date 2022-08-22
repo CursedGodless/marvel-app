@@ -1,15 +1,13 @@
 import './randomChar.scss';
 import mjolnir from '../../resources/img/mjolnir.png';
 import { useState, useEffect } from 'react';
-import MarvelService from '../../services/MarvelServices';
 import Spinner from '../spinner/Spinner';
 import Error from '../error/Error';
+import useMarvelService from '../../services/MarvelServices';
+
 function RandomChar() {
 	const [char, setChar] = useState({});
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(false);
-
-	const marvelService = new MarvelService();
+	const { loading, error, getCharacter, clearError } = useMarvelService();
 
 	useEffect(() => {
 		updateChar()
@@ -17,25 +15,13 @@ function RandomChar() {
 
 	const onCharLoaded = (char) => {
 		setChar(char);
-		setLoading(false);
-	}
-
-	const onCharLoading = () => {
-		setLoading(true);
 	}
 
 	const updateChar = () => {
 		const id = Math.floor(Math.random() * (1011400 - 1011000) + 1011000)
-		onCharLoading();
-		marvelService
-			.getCharacter(id)
+		clearError();
+		getCharacter(id)
 			.then(onCharLoaded)
-			.catch(onError)
-	}
-
-	const onError = () => {
-		setLoading(false)
-		setError(true)
 	}
 
 	const loadStatus = loading ? <Spinner /> : null;
@@ -56,7 +42,6 @@ function RandomChar() {
 					Or choose another one
 				</p>
 				<button className="button button__main" onClick={() => {
-					setError(false)
 					updateChar();
 				}}>
 					<div className="inner">try it</div>

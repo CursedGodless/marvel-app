@@ -1,28 +1,29 @@
-class MarvelService {
-	_apiBase = 'https://gateway.marvel.com:443/v1/public/';
-	_apiKey = 'apikey=70188d3e9736e22562d84fdd1a130aeb';
+import { useHttp } from "../hooks/http.hook";
 
-	getResource = async (url) => {
-		let res = await fetch(url);
 
-		if (!res.ok) {
-			throw new Error(`Could not fetch ${url}, status: ${res.status}`);
-		}
+const useMarvelService = () => {
+	const { loading, error, request, clearError } = useHttp();
 
-		return await res.json();
+	const _apiBase = 'https://gateway.marvel.com:443/v1/public/';
+	const _apiKey = 'apikey=70188d3e9736e22562d84fdd1a130aeb';
+
+
+	const getAllCharacters = async (offset = 210) => {
+		const res = await request(`${_apiBase}characters?limit=9&offset=${offset}&${_apiKey}`);
+		return res.data.results.map(_transformCharacter);
 	}
 
-	getAllCharacters = async (offset = 210) => {
-		const res = await this.getResource(`${this._apiBase}characters?limit=9&offset=${offset}&${this._apiKey}`);
-		return res.data.results.map(this._transformCharacter);
+	const getCharacter = async (id) => {
+		const res = await request(`${_apiBase}characters/${id}?${_apiKey}`);
+		return _transformCharacter(res.data.results[0]);
 	}
 
-	getCharacter = async (id) => {
-		const res = await this.getResource(`${this._apiBase}characters/${id}?${this._apiKey}`);
-		return this._transformCharacter(res.data.results[0]);
+	const getComics = async (offset = 1000) => {
+		const res = await request(`${_apiBase}comics?limit=8&offset=${offset}&${_apiKey}`);
+		return res.data.results.map(_transformComic)
 	}
 
-	_transformCharacter = (char) => {
+	const _transformCharacter = (char) => {
 		return {
 			name: char.name,
 			description: char.description ? `${char.description.slice(0, 210)}...` : 'There is no description for this character',
@@ -33,6 +34,17 @@ class MarvelService {
 			comics: char.comics.items.length === 0 ? [] : char.comics.items.slice(0, 10)
 		}
 	}
+
+	const _transformComic = (comic) => {
+		return {
+			id: comic.id,
+			name: comic.title,
+			thumbnail: comic.thumbnail.path + '.' + comic.thumbnail.extension,
+			price: comic.prices[0].price
+		}
+	}
+
+	return { loading, error, getAllCharacters, getCharacter, getComics, clearError }
 }
 
-export default MarvelService;
+export default useMarvelService;
